@@ -1,0 +1,294 @@
+---
+title: "n2014"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r get libraries}
+
+library(haven);library(tidyverse);library(survey)
+```
+
+```{r get df}
+
+df <- read_csv("H:/cabg_pci/n2014need.csv")
+
+```
+Now, prior to further analysis, remove the variables that are not needed in this study. 
+Also:
+
+1. Keep only primary surgery; remove patients with prior CABG 
+2. Remove patients with concomitant valve surgery
+
+```{r}
+
+n14 <- df
+
+pricabg <- as.character(c("V4581")) # prior MI 
+
+a <- pricabg
+
+n14$pricabg <- with(n14, ifelse((DX1 %in% a | DX2 %in% a | DX3 %in% a | DX4 %in% a | DX4 %in% a | DX5 %in% a | DX6 %in% a | DX7 %in% a | DX8 %in% a | DX10 %in% a | DX11 %in% a | DX12 %in% a | DX13 %in% a | DX14 %in% a | DX15 %in% a ), "yes","no"))
+
+n14 %>% count(pricabg)
+```
+
+
+Remove patients with prior CABG:
+
+```{r remove prior CABG patients}
+df2 <- n14 %>% filter(pricabg == "no")
+dim(df2) # df2 contains only patients with primary CABG surgery and no prior CABG surgery.
+```
+
+```{r remove patients undergoing concomitant valve surgery}
+
+# valve replacement/ valve repair 
+
+
+
+valve <- as.character(c('3511','3512','3513','3514','3521','3522','3523','3524','3526','3525','3527',
+'3528'))
+
+a <- valve
+
+df2$valve <- with(df2, ifelse((PR1 %in% a | PR2 %in% a | PR3 %in% a | PR4 %in% a | PR4 %in% a | PR5 %in% a | PR6 %in% a | PR7 %in% a | PR8 %in% a | PR10 %in% a | PR11 %in% a | PR12 %in% a | PR13 %in% a | PR14 %in% a | PR15 %in% a), "yes","no"))
+
+df2 %>% count(valve)
+
+```
+
+
+
+```{r remove valve patients too}
+
+df3 <- df2 %>% filter(valve == "no")
+dim(df3)
+```
+
+
+1. Keep only patients who underwent CABG; remove patients with underwent PCI:
+
+```{r remove PCI patients}
+
+df4 <- df3 %>% filter(cabg == "yes")
+
+```
+
+```{r change name of df to get more variables}
+
+n14 <- df4
+
+```
+
+```{r prior conditions}
+
+priormi <- as.character(c("412")) # prior MI 
+
+a <- priormi
+
+n14$priormi <- with(n14, ifelse((DX1 %in% a | DX2 %in% a | DX3 %in% a | DX4 %in% a | DX4 %in% a | DX5 %in% a | DX6 %in% a | DX7 %in% a | DX8 %in% a | DX10 %in% a | DX11 %in% a | DX12 %in% a | DX13 %in% a | DX14 %in% a | DX15 %in% a ), "yes","no"))
+
+n14 %>% count(priormi)
+
+```
+
+```{r}
+ 
+priorpci <- as.character(c("V4582")) # prior PCI 
+
+a <- priorpci
+
+n14$priorpci <- with(n14, ifelse((DX1 %in% a | DX2 %in% a | DX3 %in% a | DX4 %in% a | DX4 %in% a | DX5 %in% a | DX6 %in% a | DX7 %in% a | DX8 %in% a | DX10 %in% a | DX11 %in% a | DX12 %in% a | DX13 %in% a | DX14 %in% a | DX15 %in% a), "yes","no"))
+
+n14 %>% count(priorpci)
+
+```
+
+
+```{r}
+chf <- as.character('4280','4281','4282','4283','4284','4285','4286','4287','4288') # ICD9 codes for CHF
+
+a <- chf
+
+n14$chf <- with(n14, ifelse((DX1 %in% a | DX2 %in% a | DX3 %in% a | DX4 %in% a | DX4 %in% a | DX5 %in% a | DX6 %in% a | DX7 %in% a | DX8 %in% a | DX10 %in% a | DX11 %in% a | DX12 %in% a | DX13 %in% a | DX14 %in% a | DX15 %in% a), "yes","no"))
+
+n14 %>% count(chf)
+```
+
+
+```{r}
+
+shock <- as.character(c("78551")) # prior CABG 
+
+a <- shock
+
+n14$shock <- with(n14, ifelse((DX1 %in% a | DX2 %in% a | DX3 %in% a | DX4 %in% a | DX4 %in% a | DX5 %in% a | DX6 %in% a | DX7 %in% a | DX8 %in% a | DX10 %in% a | DX11 %in% a | DX12 %in% a | DX13 %in% a | DX14 %in% a | DX15 %in% a ), "yes","no"))
+
+n14 %>% count(shock)
+```
+
+```{r}
+
+stemi <- as.character(c("41071")) # prior CABG 
+
+a <- stemi
+
+n14$stemi <- with(n14, ifelse((DX1 %in% a | DX2 %in% a | DX3 %in% a | DX4 %in% a | DX4 %in% a | DX5 %in% a | DX6 %in% a | DX7 %in% a | DX8 %in% a | DX10 %in% a | DX11 %in% a | DX12 %in% a | DX13 %in% a | DX14 %in% a | DX15 %in% a ), "yes","no"))
+
+
+
+n14 %>% count(stemi)
+
+```
+
+```{r change df name to get more variables }
+df <- n14
+```
+
+
+```{r carotid disease}
+carotid.d <- as.character(c("43310")) # carotid artery disease
+
+a <- carotid.d
+
+df$carotid <- with(df, ifelse((DX1 %in% a | DX2 %in% a | DX3 %in% a | DX4 %in% a | DX4 %in% a | DX5 %in% a | DX6 %in% a | DX7 %in% a | DX8 %in% a | DX10 %in% a | DX11 %in% a | DX12 %in% a | DX13 %in% a | DX14 %in% a | DX15 %in% a), "yes","no"))
+
+table(df$carotid)
+```
+
+```{r}
+
+pristroke <- as.character(c("V1254","4380")) # prior stroke
+
+a <- pristroke
+
+df$pristroke <- with(df, ifelse((DX1 %in% a | DX2 %in% a | DX3 %in% a | DX4 %in% a | DX4 %in% a | DX5 %in% a | DX6 %in% a | DX7 %in% a | DX8 %in% a | DX10 %in% a | DX11 %in% a | DX12 %in% a | DX13 %in% a | DX14 %in% a | DX15 %in% a ), "yes","no"))
+
+
+table(df$pristroke)
+```
+
+```{r}
+priicd <- as.character(c("V4502")) # prior ICD implant 
+
+a <- priicd
+
+df$priicd <- with(df, ifelse((DX1 %in% a | DX2 %in% a | DX3 %in% a | DX4 %in% a | DX4 %in% a | DX5 %in% a | DX6 %in% a | DX7 %in% a | DX8 %in% a | DX10 %in% a | DX11 %in% a | DX12 %in% a | DX13 %in% a | DX14 %in% a | DX15 %in% a ), "yes","no"))
+
+table(df$priicd)
+```
+
+
+```{r}
+dementia <- as.character(c("2900","2941","2942","2948","3310","3311","3312","33182")) # dementia 
+
+a <- dementia
+
+df$dementia <- with(df, ifelse((DX1 %in% a | DX2 %in% a | DX3 %in% a | DX4 %in% a | DX4 %in% a | DX5 %in% a | DX6 %in% a | DX7 %in% a | DX8 %in% a | DX10 %in% a | DX11 %in% a | DX12 %in% a | DX13 %in% a | DX14 %in% a | DX15 %in% a ), "yes","no"))
+
+table(df$dementia)
+
+```
+
+```{r get var for n09 and convert them to lower case}
+
+n14 <- df
+
+names(n14)
+
+names(n14) <- tolower(names(n14))
+
+names(n14)
+```
+
+
+```{r getting the severity file and hospital files into the document}
+
+sev <- read_spss("F:/NIS2014/NIS_2014_Severity.sav")
+
+names(sev) <- tolower(names(sev))
+
+names(sev)
+
+sev2 <- sev %>% dplyr::select(hosp_nis, key_nis, cm_aids:cm_wghtloss)
+
+names(sev2)
+```
+
+```{r merge with df and sev}
+
+n14$key_nis <- as.numeric(n14$key_nis)
+sev2$key_nis <- as.numeric(sev2$key_nis)
+
+df2 <- left_join(n14, sev2, by = "key_nis")
+names(df2)
+
+```
+
+1. Now we need to get the hospital information into the df:
+
+```{r get hospital df}
+
+hosp <- read_spss("F:/NIS2014/NIS_2014_Hospital.sav")
+
+names(hosp) <- tolower(names(hosp))
+
+names(hosp)
+
+
+```
+
+```{r merge both df together}
+
+df2$hosp_nis <- df2$hosp_nis.x
+
+df2$hosp_nis <- as.numeric(df2$hosp_nis)
+hosp$hosp_nis <- as.numeric(hosp$hosp_nis)
+
+df3 <- left_join(df2, hosp, by = "hosp_nis")
+dim(df3)
+
+```
+
+
+```{r save df for now}
+
+write_csv(df3, "H:/bita_nis/df2014.csv")
+
+```
+
+```{r}
+
+
+m1 <- df3 %>% dplyr::select(age,  died, discwt.x,  dispuniform,  drg, dx1, 
+dx2, dx3, dx4, dx5, dx6, dx7, dx8, dx9, dx10,
+dx11, dx12, dx13, dx14, dx15, female, key_nis, los, nis_stratum.x, 
+pay1,  pr1, pr2, 
+pr3, pr4, pr5, pr6, pr7, pr8, pr9,pr10, pr11, 
+pr12, pr13, pr14, pr15,  race, totchg, 
+ year.x, cabg, 
+pci, bita, want, pricabg, valve, priormi, priorpci, 
+chf, shock, stemi, cm_aids, cm_alcohol, 
+cm_anemdef, cm_arth, cm_bldloss, cm_chf, cm_chrnlung, 
+cm_coag, cm_depress, cm_dm, cm_dmcx, cm_drug, cm_htn_c, 
+cm_hypothy, cm_liver, cm_lymph, cm_lytes, cm_mets, 
+cm_neuro, cm_obese, cm_para, cm_perivasc, cm_psych, 
+cm_pulmcirc, cm_renlfail, cm_tumor, cm_ulcer, cm_valve, 
+cm_wghtloss, hosp_nis,  discwt.y, 
+hosp_bedsize,  hosp_locteach, 
+hosp_region, nis_stratum.y, year.y)
+
+names(m1)
+```
+
+
+```{r write df to folder}
+
+write_csv(m1, "H:/bita_nis/df/m2014.csv")
+
+```
+

@@ -1,0 +1,96 @@
+---
+title: "create_amonth"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown for creating amonth and key/key_nis
+
+```{r}
+library(haven);library(tidyverse);library(survey)
+```
+
+```{r read core dataframes into the document}
+#2007
+c07 <- read_stata("F:/NIS_2007_Core.dta")
+
+a07 <- c07 %>% select(KEY, AMONTH)
+
+names(a07) <- tolower(names(a07))
+
+write_csv(a07, "H:/bita_nis/df/a07.csv")
+
+
+#2008
+
+c08 <- read_stata("F:/NIS_2008_Core.dta")
+
+a08 <- c08 %>% select(KEY, AMONTH)
+
+write_csv(a08, "H:/bita_nis/df/a08.csv")
+
+
+
+#2009
+c09 <- read_stata("H:/NIS_2009_Core.dta")
+
+a09 <- c09 %>% select(KEY, AMONTH)
+
+write_csv(a09, "H:/bita_nis/a09.csv")
+
+
+#2010
+c10 <- read_stata("E:/NIS_DATA/nis_material/nis_data/nis2010/NIS_2010_Core.dta")
+
+a10 <- c10 %>% select(KEY, AMONTH)
+
+write_csv(a10, "H:/bita_nis/a10.csv")
+
+
+#2011
+
+c11 <- read_stata("E:/NIS_DATA/nis_material/nis_data/nis2011/NIS_2011_Core.dta")
+
+a11 <- c11 %>% select(KEY, AMONTH)
+
+write_csv(a11, "H:/bita_nis/a11.csv")
+
+
+#2012
+
+c12 <- read_stata("E:/NIS_DATA/nis_material/nis_data/nis2012/NIS_2012_Core.dta")
+
+a12 <- c12 %>% select(KEY_NIS,AMONTH)
+
+write_csv(a12, "H:/bita_nis/a12.csv")
+
+
+#2013
+
+c13 <- read_stata("F:/NIS_2013_Core.dta")
+
+a13 <- c13 %>% select(KEY_NIS, AMONTH)
+
+write_csv(a13, "H:/bita_nis/a13.csv")
+
+
+#2014
+
+c14 <- read_spss("G:/NIS_2014_Core.sav")
+
+a14 <- c14 %>% select(KEY_NIS, AMONTH)
+
+write_csv(a14, "H:/bita_nis/a14.csv")
+
+#2015 q3
+
+c15 <- read_stata("G:/NIS_2015_Core.dta")
+
+a15 <- c15 %>% select(KEY_NIS,AMONTH)
+
+write_csv(a15, "H:/bita_nis/a15.csv")
+```
+

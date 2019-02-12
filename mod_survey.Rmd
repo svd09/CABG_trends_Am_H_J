@@ -1,0 +1,1052 @@
+---
+title: "survey analysis"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(haven);library(tidyverse);library(survey);library(tableone);library(DescTools);library(readxl)
+```
+
+Get data into the document
+
+```{r}
+
+df <- read_csv("H:/bita_nis/df/svydf.csv")
+
+b2 <- read_csv("H:/bita_nis/df/b2.csv")
+```
+
+```{r set lonely psu to average}
+options("survey.lonely.psu" = 'average')
+```
+
+Prepare table 1:
+
+```{r}
+# table 1 with data from 2007 - 2015 3 quarters:
+
+tdf <- df %>% 
+  select(age, bita, died, year.x, dispuniform, female, key, 
+los, nis_stratum.x, trendwt, priormi, priorpci, 
+chf, stemi, hospid, hosp_region, hosp_locteach, hosp_bedsize, 
+race, cm_dm, cm_dmcx, cm_obese, cm_renlfail,discwt.x, cabg_n, media, inf, cpb, race_n, pay_n, bita_i,discwt.x, iddm_n, disp_n, iddm_n, iabp_n, pvad_n)
+
+myvars <- c('age', 'bita', 'died', 'year.x', 'dispuniform', 'female',
+'los',  'priormi', 'priorpci', 
+'chf', 'stemi', 'hosp_region', 'hosp_locteach', 'hosp_bedsize',  'cm_dm', 'cm_dmcx', 'cm_obese', 'cm_renlfail', 'media', 'inf', 'cpb', 'race_n', 'pay_n', 'bita_i', 'disp_n', "iddm_n", "iabp_n", "pvad_n")
+
+
+
+## Vector of categorical variables that need transformation
+
+catVars <- c( 'bita', 'died', 'year.x', 'dispuniform', 'female',
+  'priormi', 'priorpci', 'chf', 'stemi', 'hosp_region', 'hosp_locteach', 'hosp_bedsize',  'cm_dm', 'cm_dmcx', 'cm_obese', 'cm_renlfail', 'media', 'inf', 'cpb', 'race_n', 'pay_n', 'bita_i', "disp_n", "iddm_n", "iabp_n", "pvad_n")
+
+t1d <- svydesign(data = tdf, strata = ~nis_stratum.x, id = ~hospid, weights = ~discwt.x, nest = TRUE)
+
+tab1 <- svyCreateTableOne(vars = myvars , data = t1d, factorVars = catVars, includeNA = TRUE, smd = TRUE)
+
+
+table1 <- print(tab1, quote = FALSE, noSpaces = TRUE, printToggle = FALSE)
+
+write.csv(table1, file = "H:/bita_nis/df/table1.csv")
+
+
+
+```
+
+
+
+
+```{r adding some more variables into b2 to get all var in prior to analysis}
+
+# iabp
+
+iabp <- as.character(c("5A02210"))
+
+a <- iabp
+
+
+
+b2$iabp_n <- with(b2, ifelse((i10_pr1 %in% a | i10_pr2 %in% a | i10_pr3 %in% a | i10_pr4 %in% a  | i10_pr5 %in% a | i10_pr6 %in% a | i10_pr7 %in% a | i10_pr8 %in% a |i10_pr9 %in% a| i10_pr10 %in% a | i10_pr11 %in% a | i10_pr12 %in% a | i10_pr13 %in% a | i10_pr14 %in% a | i10_pr15 %in% a ), "yes","no"))
+
+b2 %>% count(iabp_n)
+
+```
+```{r}
+
+pvad <- as.character(c("5A0221D","5A02216","5A02116","5A0211D","02HA0RJ","02HA3RJ","02HA3RZ"))
+
+
+a <- pvad
+
+b2$pvad_n <- with(b2, ifelse((i10_pr1 %in% a | i10_pr2 %in% a | i10_pr3 %in% a | i10_pr4 %in% a  | i10_pr5 %in% a | i10_pr6 %in% a | i10_pr7 %in% a | i10_pr8 %in% a |i10_pr9 %in% a| i10_pr10 %in% a | i10_pr11 %in% a | i10_pr12 %in% a | i10_pr13 %in% a | i10_pr14 %in% a | i10_pr15 %in% a ), "yes","no"))
+
+b2 %>% count(pvad_n)
+```
+
+
+```{r}
+obese <- as.character(c("E6601",
+           "E6609",
+           "E661",
+           "E662",
+           "E668",
+           "E669",
+           "O99210",
+           "O99211",
+           "O99212",
+           "O99213",
+           "O99214",
+           "O99215",
+           "R939",
+           "Z6830",
+           "Z6831",
+           "Z6832",
+           "Z6833",
+           "Z6834",
+           "Z6835",
+           "Z6836",
+           "Z6837",
+           "Z6838",
+           "Z6839",
+           "Z6841",
+           "Z6842",
+           "Z6843",
+           "Z6844",
+           "Z6845",
+           "Z6854"))
+
+
+renlfail <- as.character(c(
+  
+  "N183",
+  "N184",
+  "N185",
+  "N186",
+  "N189",
+  "N19",
+  "Z4901",
+  "Z4902",
+  "Z4931",
+  "Z4932",
+  "Z9115",
+  "Z940",
+  "Z992"))
+
+
+a <- obese
+
+b2$cm_obese <- with(b2, ifelse((i10_dx1 %in% a | i10_dx2 %in% a | i10_dx3 %in% a | i10_dx4 %in% a  | i10_dx5 %in% a | i10_dx6 %in% a | i10_dx7 %in% a | i10_dx8 %in% a |i10_dx9 %in% a| i10_dx10 %in% a | i10_dx11 %in% a | i10_dx12 %in% a | i10_dx13 %in% a | i10_dx14 %in% a | i10_dx15 %in% a ), "yes","no"))
+
+b2 %>% count(cm_obese)
+
+
+a <- renlfail
+
+b2$cm_renlfail <- with(b2, ifelse((i10_dx1 %in% a | i10_dx2 %in% a | i10_dx3 %in% a | i10_dx4 %in% a  | i10_dx5 %in% a | i10_dx6 %in% a | i10_dx7 %in% a | i10_dx8 %in% a |i10_dx9 %in% a| i10_dx10 %in% a | i10_dx11 %in% a | i10_dx12 %in% a | i10_dx13 %in% a | i10_dx14 %in% a | i10_dx15 %in% a ), "yes","no"))
+
+b2 %>% count(cm_renlfail)
+
+
+
+cs <- as.character(c("R570"))
+
+a <- cs
+
+b2$cs <- with(b2, ifelse((i10_dx1 %in% a | i10_dx2 %in% a | i10_dx3 %in% a | i10_dx4 %in% a  | i10_dx5 %in% a | i10_dx6 %in% a | i10_dx7 %in% a | i10_dx8 %in% a |i10_dx9 %in% a| i10_dx10 %in% a | i10_dx11 %in% a | i10_dx12 %in% a | i10_dx13 %in% a | i10_dx14 %in% a | i10_dx15 %in% a ), "yes","no"))
+
+b2 %>% count(cs)
+
+```
+
+```{r}
+svydf <- survey::svydesign(data = df, weights = ~discwt.x, strata = ~nis_stratum.x, id = ~hospid, nest = T)
+
+summary(svydf)
+
+
+```
+
+
+
+
+```{r}
+
+b2$chf <- b2$cm_chf
+
+
+# disposition after dismissal
+
+b2 <- b2 %>% 
+  mutate(disp_n = fct_recode(factor(dispuniform),
+                            "home" = "1",
+                            "short term hospital" = "2",
+                            "SNF" = "5",
+                            "home health care" = "6",
+                            "AMA" = "7",
+                            "died" = "20"))
+
+b2$disp_n[b2$disp_n == "21"]<- NA
+b2$disp_n[b2$disp_n == "99"]<- NA
+
+b2 %>% count(disp_n)
+
+b2$bita_i[b2$bita == "yes"] <- 1
+b2$bita_i[b2$bita == "no"]<- 0
+
+
+b2 <- b2 %>% filter(age >= 18)
+
+
+b2$young[b2$age <51]<- "yes"
+b2$young[b2$age >50]<- "no"
+
+b2$old[b2$age > 79]<- "yes"
+b2$old[b2$age <80]<- "no"
+
+
+svyb2 <- survey::svydesign(data = b2, weights = ~discwt.y, strata = ~nis_stratum.x, id = ~hosp_nis.x, nest = TRUE)
+
+summary(svyb2)
+```
+
+
+```{r}
+
+b2df <- b2 %>% 
+  select(age, bita, died, year.x, dispuniform, female, key_nis, 
+los, nis_stratum.x,  priormi, priorpci, 
+chf, stemi, hosp_nis.x, hosp_region, hosp_locteach, hosp_bedsize, 
+race, cm_dm, cm_dmcx, cm_obese, cm_renlfail,discwt.x,  cpb, race_n, pay_n, discwt.x, iddm_n, disp_n, iddm_n, iabp_n, pvad_n, bita_i, disp_n, cs)
+
+
+
+myvars <- c('age', 'bita', 'died', 'year.x', 'dispuniform', 'female',
+'los',  'priormi', 'priorpci', 
+'chf', 'stemi', 'hosp_region', 'hosp_locteach', 'hosp_bedsize',  'cm_dm', 'cm_dmcx', 'cm_obese', 'cm_renlfail',  'cpb', 'race_n', 'pay_n', 'bita_i', 'disp_n', "iddm_n", "iabp_n", "pvad_n", "cs")
+
+
+
+## Vector of categorical variables that need transformation
+
+catVars <- c( 'bita', 'died', 'year.x', 'dispuniform', 'female',
+  'priormi', 'priorpci', 'chf', 'stemi', 'hosp_region', 'hosp_locteach', 'hosp_bedsize',  'cm_dm', 'cm_dmcx', 'cm_obese', 'cm_renlfail',  'cpb', 'race_n', 'pay_n', 'bita_i', "disp_n", "iddm_n", "iabp_n", "pvad_n", "cs")
+
+t1b <- svydesign(data = b2df, strata = ~nis_stratum.x, id = ~hosp_nis.x, weights = ~discwt.x, nest = TRUE)
+
+tab1b <- svyCreateTableOne(vars = myvars , data = t1b, factorVars = catVars, includeNA = TRUE, smd = TRUE)
+
+
+table1b <- print(tab1b, quote = FALSE, noSpaces = TRUE, printToggle = FALSE)
+
+write.csv(table1b, file = "H:/bita_nis/df/table1b.csv")
+```
+
+
+
+Doing some initial survey analysis to get basic #:
+
+```{r some survey analysis}
+
+# age at surgery
+
+# mean age per year for all CABG patients
+
+svyby(~age, by = ~year.x, FUN = svymean, design = svydf)
+
+
+# for the last period
+
+svyby(~age, by = ~year.x, FUN = svymean, design = svyb2)
+
+
+# gender according to year
+
+# gender per year
+
+f <- svytable(~year.x + female, svydf)
+
+f1 <- as.data.frame(f)
+
+tbl_df(f1)
+
+f3 <- f1 %>% spread(key = female, value = Freq)
+
+f3
+
+
+# for the last period
+
+fb <- svytable(~year.x + female, svyb2)
+
+fb1 <- as.data.frame(fb)
+
+tbl_df(fb)
+
+fb
+```
+
+```{r type of admission}
+
+
+d07 <- read_csv("H:/bita_nis/df/m2007.csv")
+d08 <- read_csv("H:/bita_nis/df/m2008.csv")
+d09 <- read_csv("H:/bita_nis/df/m2009.csv")
+d10 <- read_csv("H:/bita_nis/df/m2010.csv")
+d11 <- read_csv("H:/bita_nis/df/m2011.csv")
+
+
+
+t07 <- d07 %>% select(atype,discwt.x, hospid, nis_stratum.x, year.x)
+t08 <- d08 %>% select(atype,discwt.x, hospid, nis_stratum.x, year.x)
+t09 <- d09 %>% select(atype,discwt.x, hospid, nis_stratum.x, year.x)
+t10 <- d10 %>% select(atype,discwt.x, hospid, nis_stratum.x, year.x)
+t11 <- d11 %>% select(atype,discwt.x, hospid, nis_stratum.x, year.x)
+
+df2 <- rbind(t07,t08,t09,t10,t11)
+
+df2$admit[df2$atype == 1]<- "nonelective"
+df2$admit[df2$atype == 2]<- "nonelective"
+df2$admit[df2$atype == 3]<- "elective"
+
+
+
+
+svyt <- survey::svydesign(data = df2, ids = ~hospid, stata = ~nis_stratum.x, nest = TRUE, weights = ~discwt.x )
+
+
+aty <- svytable(~year.x + admit, svyt)
+
+aty1 <- tbl_df(aty)
+
+aty1
+
+aty2 <- aty1 %>% spread(key = admit, value = n)
+
+aty2
+
+#write_csv(aty2, "H:/bita_nis/df/atype.csv")
+
+aty3 <- aty2 %>% mutate(total = elective + nonelective)
+
+aty4 <- aty3 %>% mutate(perc = (elective/total)*100)
+
+svytotal(~admit, svyt, na.rm = TRUE)
+
+```
+
+
+
+
+Survey analysis by year to determine trends per year:
+
+```{r}
+
+
+#################################################################
+
+##specific age groups
+
+young <- svytable(~year.x + young, svydf)
+
+y1 <- as.data.frame(young)
+
+y2 <- y1 %>% spread(key = young,value = Freq )
+
+y2 %>% tbl_df
+
+y3 <- y2 %>% mutate(total = yes + no)
+
+y4 <- y3 %>% mutate(perc = (yes/total)*100)
+
+y4
+
+###
+
+# young patients in the last period
+
+yl <- svytable(~year.x + young, design = svyb2)
+
+yl <- as.data.frame(yl)
+
+yl1 <- yl %>% tbl_df
+
+yl2 <- yl1 %>% spread(key = young, value = Freq)
+
+yl3 <- yl2 %>% mutate(total = yes + no)
+
+yl4 <- yl3 %>% mutate(perc = ((yes/total)*100))
+
+############
+
+r <- read_excel("H:/bita_nis/st/cs.xlsx", sheet = "young") %>% tbl_df 
+
+rc <- r %>% select(yes, total)
+
+DescTools::CochranArmitageTest(rc, alternative = "increasing")
+      
+prop.trend.test(x = r$yes, n = r$total)
+
+
+
+## octogenarians
+
+o <- svytable(~year.x + old, svydf)
+
+o1 <- as.data.frame(o)
+
+o2 <- o1 %>% spread(key = old,value = Freq )
+
+o2 %>% tbl_df
+
+o3 <- o2 %>% mutate(total = yes + no)
+
+o4 <- o3 %>% mutate(perc = (yes/total)*100)
+
+o4
+
+### last period
+
+ol <- svytable(~year.x + old, svyb2)
+
+ol1 <- as.data.frame(ol)
+
+ol2 <- ol1 %>% spread(key = old,value = Freq )
+
+ol2 %>% tbl_df
+
+ol3 <- ol2 %>% mutate(total = yes + no)
+
+ol4 <- ol3 %>% mutate(perc = (yes/total)*100)
+
+ol4
+
+###
+
+o <- read_excel("H:/bita_nis/st/cs.xlsx", sheet = "old") %>% tbl_df
+
+prop.trend.test(x = o$yes, n = o$total)
+
+oc <- o %>% select(yes, total)
+
+DescTools::CochranArmitageTest(oc, alternative = "increasing")
+
+# gender per year
+
+f <- svytable(~year.x + female, svydf)
+
+f1 <- as.data.frame(f)
+
+tbl_df(f1)
+
+f3 <- f1 %>% spread(key = female, value = Freq)
+
+#write_csv(f3, "H:/bita_nis/st/female_prop.csv")
+```
+
+
+```{r bita }
+
+
+######################################################################
+# BITA procedures per year of study
+
+b <- svytable(~year.x + bita, svydf)
+
+b1 <- as.data.frame(b)
+
+tbl_df(b1)
+
+b3 <- b1 %>% spread(key = bita, value = Freq)
+
+b4 <- mutate(b3, total = no + yes)
+
+b5 <- b4 %>% mutate(perc = ((yes/total)*100))
+
+#write_csv(b5, "H:/bita_nis/st/bita_prop.csv")
+
+
+bl <- svytable(~year.x + bita, svyb2)
+
+bl
+
+ba <- read_excel("H:/bita_nis/st/cs.xlsx", sheet = "bita") %>% tbl_df
+
+baa <- ba %>% select(yes, total)
+
+DescTools::CochranArmitageTest(baa, alternative = "two.sided")
+
+
+```
+
+
+
+```{r}
+
+# Comorbidity at presentation during the study period. Trends:
+
+dmn <- svytable(~year.x + cm_dm, design = svydf)
+
+dmn
+
+dmnl <- svytable(~year.x + cm_dm,design = svyb2)
+
+dmnl
+
+###
+
+# insulin dependent DM
+
+idd <- svytable(~year.x + iddm_n, design = svydf)
+
+idd
+
+iddl <- svytable(~year.x + iddm_n,design = svyb2)
+
+iddl
+
+
+
+
+
+###################################################################
+
+
+# prior mi per year
+
+pmi <- svytable(~year.x + priormi, svydf)
+
+as.data.frame(pmi)
+
+pm1 <- pmi %>% tbl_df
+
+pm2 <- pm1 %>% spread(key = priormi, value = n)
+
+pm2
+
+pm3 <- pm2 %>% mutate(total = yes + no)
+
+pm4 <- pm3 %>% mutate(perc = ((yes/total)*100))
+
+pm4
+
+
+###########################################################################
+
+# cardiogenic shock at presentation 
+
+cy <- svytable(~year.x + cs, svydf)
+
+as.data.frame(cy)
+
+cy1 <- cy %>% tbl_df
+
+cy2 <- cy1 %>% spread(key = cs, value = n)
+
+cy2
+
+cy3 <- cy2 %>% mutate(total = yes + no)
+
+cy4 <- cy3 %>% mutate(perc = ((yes/total)*100))
+
+cy4
+
+## last period cardiogenic shock
+
+cyl <- svytable(~year.x + cs, svyb2)
+
+as.data.frame(cy)
+
+cyl1 <- cyl %>% tbl_df
+
+cyl2 <- cyl1 %>% spread(key = cs, value = n)
+
+cyl2
+
+cyl3 <- cyl2 %>% mutate(total = yes + no)
+
+cyl4 <- cyl3 %>% mutate(perc = ((yes/total)*100))
+
+cyl4
+
+#### 
+cst <- read_excel("H:/bita_nis/st/cs.xlsx", sheet = "cs") %>% tbl_df
+
+cs <- cst %>% select(yes, total)
+
+prop.trend.test(x = cst$yes, n = cst$total)
+
+DescTools::CochranArmitageTest(cs, alternative = "two.sided")
+
+###########################################################
+
+# important to determine use of IABP or PVAD with CABG surgery; so see if PVAD/IABP occurred same day or prior day.
+
+# iabp
+
+ia <- svytable(~year.x + iabp_n, svydf)
+
+as.data.frame(ia)
+
+ia1 <- ia %>% tbl_df
+
+ia2 <- ia1 %>% spread(key = iabp_n, value = n)
+
+ia2
+
+ia3 <- ia2 %>% mutate(total = yes + no)
+
+ia4 <- ia3 %>% mutate(perc = ((yes/total)*100))
+
+ia4
+
+# iabp use in the last period
+
+ial <- svytable(~year.x + iabp_n, svyb2)
+
+ial1 <- ial %>% tbl_df
+
+ial2 <- ial1 %>% spread(key = iabp_n, value = n)
+
+ial3 <- ial2 %>% mutate(total = yes + no)
+
+ial4 <- ial3 %>% mutate(perc = ((yes/total)*100))
+
+ial4
+
+##
+
+i <- readxl::read_excel("H:/bita_nis/st/cs.xlsx", sheet = "iabp") %>% tbl_df
+
+id <- i %>% select(yes, total)
+
+prop.trend.test(x = id$yes, n = id$total)
+
+DescTools::CochranArmitageTest(id, alternative="increasing")
+
+
+############################################################
+# pvad use during the study period
+
+pv <-  svytable(~year.x + pvad_n, svydf)
+
+as.data.frame(pv)
+
+pv1 <- pv %>% tbl_df
+
+pv2 <- pv1 %>% spread(key = pvad_n, value = n)
+
+pv2
+
+pv3 <- pv2 %>% mutate(total = yes + no)
+
+pv4 <- pv3 %>% mutate(perc = ((yes/total)*100))
+
+pv4
+
+## pvad use for the last period
+
+pvl <- svytable(~year.x + pvad_n, design = svyb2)
+
+pvl1 <- pvl %>% tbl_df
+
+pvl2 <- pvl1 %>% spread(key = pvad_n, value = n)
+
+pvl3 <- pvl2 %>% mutate(total = yes + no)
+
+pvl4 <- pvl3 %>% mutate(perc = ((yes/total)*100))
+
+###
+
+pa <- read_excel("H:/bita_nis/st/cs.xlsx", sheet = "pvad") %>% tbl_df
+
+pac <- pa %>% select(yes, total)
+
+DescTools::CochranArmitageTest(pac, alternative = "decreasing")
+
+```
+
+
+
+```{r}
+## chf
+
+c <- svytable(~year.x + chf, design = svydf)
+
+cl <- svytable(~year.x + chf, design = svyb2)
+
+ca <- read_excel("H:/bita_nis/st/cs.xlsx", sheet = "chf") %>% tbl_df
+
+caa <- ca %>% select(yes, total)
+
+DescTools::CochranArmitageTest(caa, alternative = "two.sided")
+
+
+## renlfail
+
+r <- svytable(~year.x + cm_renlfail, design = svydf)
+
+rl <- svytable(~year.x + cm_renlfail, design = svyb2)
+
+ra <- read_excel("H:/bita_nis/st/cs.xlsx", sheet = "renlfail") %>% tbl_df
+
+raa <- ra %>% select(yes, total)
+
+DescTools::CochranArmitageTest(raa, alternative = "two.sided")
+
+```
+
+```{r}
+# teaching status
+
+
+df <- df %>%
+  mutate(teach = fct_recode(factor(hosp_locteach),
+                            "rural" = "1",
+                            "urban/nonteach" = "2",
+                            "urban/teach" = "3"))
+
+df %>% count(teach)
+
+b2 <- b2 %>%
+  mutate(teach = fct_recode(factor(hosp_locteach),
+                            "rural" = "1",
+                            "urban/nonteach" = "2",
+                            "urban/teach" = "3"))
+
+b2 %>% count(teach)
+
+```
+
+
+```{r hospital region}
+
+df <- df %>% mutate(region = fct_recode(factor(hosp_region),
+                                        "North-East" = "1",
+                                        "Mid-West" = "2",
+                                        "South" = "3",
+                                        "West" = "4"))
+
+df %>% count(region)
+
+
+b2 <- b2 %>% mutate(region = fct_recode(factor(hosp_region),
+                                        "North-East" = "1",
+                                        "Mid-West" = "2",
+                                        "South" = "3",
+                                        "West" = "4"))
+
+b2 %>% count(region)
+
+
+
+
+```
+
+
+
+OUTCOMES:
+
+
+```{r}
+svydf <- survey::svydesign(data = df, weights = ~discwt.x, strata = ~nis_stratum.x, id = ~hospid, nest = T)
+
+summary(svydf) # survey obj for earlier df
+
+
+
+svyb2 <- survey::svydesign(data = b2, weights = ~discwt.y, strata = ~nis_stratum.x, id = ~hosp_nis.x, nest = TRUE)
+
+summary(svyb2) # survey object for recent  df 
+```
+
+
+
+```{r}
+#died
+
+d <- svytable(~year.x + died, svydf)
+
+dl <- svytable(~year.x + died, svyb2)
+
+di <- read_excel("H:/bita_nis/st/cs.xlsx", sheet = "died") %>% tbl_df
+
+did <- di %>% select(yes, total)
+
+DescTools::CochranArmitageTest(did, alternative = "two.sided")
+
+
+### acute renal failure
+
+arf <- as.character(c("5849"))
+
+a <- arf
+
+df$arf <- with(df, ifelse((dx1 %in% a | dx2 %in% a | dx3 %in% a | dx4 %in% a  | dx5 %in% a | dx6 %in% a | dx7 %in% a | dx8 %in% a |dx9 %in% a| dx10 %in% a), "yes","no"))
+
+df %>% count(arf)
+
+
+arf <- as.character(c("N179"))
+
+a <- arf
+
+b2$arf <- with(b2, ifelse((i10_dx1 %in% a | i10_dx2 %in% a | i10_dx3 %in% a | i10_dx4 %in% a  | i10_dx5 %in% a | i10_dx6 %in% a | i10_dx7 %in% a | i10_dx8 %in% a |i10_dx9 %in% a| i10_dx10 %in% a | i10_dx11 %in% a | i10_dx12 %in% a | i10_dx13 %in% a | i10_dx14 %in% a | i10_dx15 %in% a ), "yes","no"))
+
+b2 %>% count(arf)
+
+a1 <- svytable(~year.x + arf, design = subset(svydf, cm_renlfail == "0"))
+
+a1
+
+al <- svytable(~year.x + arf, design = subset(svyb2, cm_renlfail== "no"))
+
+al
+
+
+
+
+## los
+
+l <- svyby(~los, by = ~year.x, FUN = svymean,design = svydf, na.rm = TRUE)
+
+ll <- svyby(~los, by = ~year.x, FUN = svymean,design = svyb2, na.rm = TRUE)
+
+l3 <- rbind(l,ll)
+
+llos <- l3 %>% select(los, year.x)
+
+llos
+
+lg <- lm(los ~ year.x, data = llos)
+
+summary(lg)
+
+###
+
+#discharge disposition
+
+disp <- svytotal(~disp_n, svydf, na.rm = TRUE)
+
+displ <- svytotal(~disp_n, svyb2, na.rm = TRUE)
+
+
+
+dismissal <- 676189 + 522901 + 11063 + 276072 + 830 + 26525 + 43130 + 49030
+
+hhc <- (43130+522901)/1605740
+
+snf <- (276072+26525)/1605740
+
+ltac <- (830+11063)/1605740
+
+
+## discharge disposition according to years of study
+
+ds <- svytable(~year.x + disp_n, svydf)
+
+dsl <- svytable(~year.x + disp_n, svyb2)
+
+ds1 <- data.frame(ds)
+dsl1 <- data.frame(dsl)
+
+ds2 <- ds1 %>% spread(key = disp_n, value = Freq) %>% tbl_df
+
+dsl2 <- dsl1 %>% spread(key = disp_n, value = Freq) %>% tbl_df
+
+
+write_csv(ds2, "H:/bita_nis/st/ds2.csv")
+
+write_csv(dsl2, "H:/bita_nis/st/dsl2.csv")
+
+# disc and then calculate
+
+disc <- read_csv("H:/bita_nis/st/disc.csv")
+
+disc2 <- disc %>% mutate(total = home + HHC + LTAC + SNF)
+
+hhc <- disc2 %>% mutate(hhc_p = (HHC*100)/total)
+
+snf <- hhc %>% mutate(snf_p = (SNF*100)/total)
+
+ltac <- snf %>% mutate(ltac_p = (LTAC*100)/total)
+
+write_csv(ltac, "H:/bita_nis/st/dismissal_p.csv")
+
+snf_c <- snf %>% select(SNF, total)
+
+DescTools::CochranArmitageTest(snf_c, alternative = "two.sided")
+
+```
+
+
+
+
+
+
+```{r race and insurance}
+
+r <- svytable(~year.x + race_n, svydf)
+
+rl <- svytable(~year.x + race_n, svyb2)
+
+r
+
+rl
+
+
+p <- svytable(~year.x + pay_n, svydf)
+
+pl <- svytable(~year.x + pay_n, svyb2)
+
+p
+pl
+
+
+####
+
+
+pt <- p %>% tbl_df
+
+pt
+
+pt2 <- pt %>% spread(key = pay_n, value = n)
+
+pt2
+
+pt3 <- pt2 %>% mutate(total = medicaid + medicare + other + private_insurance + self_pay)
+
+pt3
+
+write_csv(pt3, "H:/bita_nis/st/pay.csv")
+
+
+
+## CPB use
+
+cpb <- svytable(~year.x + cpb, design = svydf)
+
+cpb
+
+
+
+cpbl <- svytable(~year.x + cpb, design = svyb2)
+
+cpbl
+
+
+cp_t <- read_excel("H:/bita_nis/st/cs.xlsx", sheet = "cpb")
+
+cp_t1 <- cp_t %>% select(perc)
+
+DescTools::CochranArmitageTest(cp_t1)
+
+library(Kendall)
+
+Kendall::MannKendall(cp_t1$perc)
+
+
+```
+
+```{r teaching status and trends}
+
+tea <- svytotal(~teach, svydf,na.rm = TRUE)
+
+teal <- svytotal(~teach, svyb2)
+
+tea
+teal
+
+# trend for hospital type over the study period
+
+tea_t <- svytable(~year.x + teach, svydf)
+
+teal_t <- svytable(~year.x + teach, svyb2)
+
+tea_t
+
+teal_t
+
+tea_t2 <- data.frame(tea_t)
+
+tea_t3 <- tea_t2 %>% tbl_df
+
+tea_t3
+
+tea_t4 <- tea_t3 %>% spread(key = teach, value = Freq)
+
+tea_t4
+
+write_csv(tea_t4, "H:/bita_nis/st/teach_trend.csv")
+
+tt <- read_excel("H:/bita_nis/st/teach_trend2.xlsx")
+
+library()
+
+```
+
+
+```{r}
+svytotal(~region, na.rm=T, svydf)
+
+svytotal(~region, svyb2, na.rm = T)
+
+
+reg <- svytable(~year.x + region, svydf)
+
+reg2 <- data.frame(reg)
+
+reg2 %>% tbl_df()
+
+reg3 <- reg2 %>% spread(key = region, value = Freq)
+
+reg3
+
+write_csv(reg3, "H:/bita_nis/st/region.csv")
+
+regl <- svytable(~year.x + region, svyb2)
+
+regl2 <- data.frame(regl)
+
+regl2 %>% tbl_df()
+
+regl3 <- regl2 %>% spread(key = region, value = Freq)
+
+regl3
+
+
+```
+
+```{r}
+# mortality according to pay and year
+
+
+
+
+m_aid <- svytable(~year.x + died, design = subset(svydf, pay_n == "medicaid"))
+
+m_aid2 <- m_aid %>% tbl_df
+
+m_aid3 <- m_aid2 %>% spread(key = died, value = n)
+
+write_csv(m_aid3, "H:/bita_nis/st/medicaid_m.csv")
+
+m_care <- svytable(~year.x + died, design = subset(svydf, pay_n == "medicare"))
+
+priv <- svytable(~year.x + died, design = subset(svydf, pay_n == "private_insurance"))
+
+```
+
+
+
+
+
+
+
+

@@ -1,0 +1,286 @@
+---
+title: "table1"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(haven);library(tidyverse);library(survey);library(tableone);library(DescTools);library(readxl)
+```
+
+
+```{r get the data...}
+
+df <- read_csv("H:/bita_nis/df/svydf.csv")
+
+b2 <- read_csv("H:/bita_nis/df/b2.csv")
+```
+
+
+
+```{r}
+obese <- as.character(c("E6601",
+           "E6609",
+           "E661",
+           "E662",
+           "E668",
+           "E669",
+           "O99210",
+           "O99211",
+           "O99212",
+           "O99213",
+           "O99214",
+           "O99215",
+           "R939",
+           "Z6830",
+           "Z6831",
+           "Z6832",
+           "Z6833",
+           "Z6834",
+           "Z6835",
+           "Z6836",
+           "Z6837",
+           "Z6838",
+           "Z6839",
+           "Z6841",
+           "Z6842",
+           "Z6843",
+           "Z6844",
+           "Z6845",
+           "Z6854"))
+
+
+renlfail <- as.character(c(
+  
+  "N183",
+  "N184",
+  "N185",
+  "N186",
+  "N189",
+  "N19",
+  "Z4901",
+  "Z4902",
+  "Z4931",
+  "Z4932",
+  "Z9115",
+  "Z940",
+  "Z992"))
+
+
+a <- obese
+
+b2$cm_obese <- with(b2, ifelse((i10_dx1 %in% a | i10_dx2 %in% a | i10_dx3 %in% a | i10_dx4 %in% a  | i10_dx5 %in% a | i10_dx6 %in% a | i10_dx7 %in% a | i10_dx8 %in% a |i10_dx9 %in% a| i10_dx10 %in% a | i10_dx11 %in% a | i10_dx12 %in% a | i10_dx13 %in% a | i10_dx14 %in% a | i10_dx15 %in% a ), "yes","no"))
+
+b2 %>% count(cm_obese)
+
+
+a <- renlfail
+
+b2$cm_renlfail <- with(b2, ifelse((i10_dx1 %in% a | i10_dx2 %in% a | i10_dx3 %in% a | i10_dx4 %in% a  | i10_dx5 %in% a | i10_dx6 %in% a | i10_dx7 %in% a | i10_dx8 %in% a |i10_dx9 %in% a| i10_dx10 %in% a | i10_dx11 %in% a | i10_dx12 %in% a | i10_dx13 %in% a | i10_dx14 %in% a | i10_dx15 %in% a ), "yes","no"))
+
+b2 %>% count(cm_renlfail)
+
+
+
+cs <- as.character(c("R570"))
+
+a <- cs
+
+b2$cs <- with(b2, ifelse((i10_dx1 %in% a | i10_dx2 %in% a | i10_dx3 %in% a | i10_dx4 %in% a  | i10_dx5 %in% a | i10_dx6 %in% a | i10_dx7 %in% a | i10_dx8 %in% a |i10_dx9 %in% a| i10_dx10 %in% a | i10_dx11 %in% a | i10_dx12 %in% a | i10_dx13 %in% a | i10_dx14 %in% a | i10_dx15 %in% a ), "yes","no"))
+
+b2 %>% count(cs)
+
+
+
+
+b2$chf <- b2$cm_chf
+
+
+# disposition after dismissal
+
+b2 <- b2 %>% 
+  mutate(disp_n = fct_recode(factor(dispuniform),
+                            "home" = "1",
+                            "short term hospital" = "2",
+                            "SNF" = "5",
+                            "home health care" = "6",
+                            "AMA" = "7",
+                            "died" = "20"))
+
+b2$disp_n[b2$disp_n == "21"]<- NA
+b2$disp_n[b2$disp_n == "99"]<- NA
+
+b2 %>% count(disp_n)
+
+b2$bita_i[b2$bita == "yes"] <- 1
+b2$bita_i[b2$bita == "no"]<- 0
+
+
+b2 <- b2 %>% filter(age >= 18)
+
+
+b2$young[b2$age <51]<- "yes"
+b2$young[b2$age >50]<- "no"
+
+b2$old[b2$age > 79]<- "yes"
+b2$old[b2$age <80]<- "no"
+
+
+
+# teaching status
+
+
+df <- df %>%
+  mutate(teach = fct_recode(factor(hosp_locteach),
+                            "rural" = "1",
+                            "urban/nonteach" = "2",
+                            "urban/teach" = "3"))
+
+df %>% count(teach)
+
+b2 <- b2 %>%
+  mutate(teach = fct_recode(factor(hosp_locteach),
+                            "rural" = "1",
+                            "urban/nonteach" = "2",
+                            "urban/teach" = "3"))
+
+b2 %>% count(teach)
+
+
+
+# iabp
+
+iabp <- as.character(c("5A02210"))
+
+a <- iabp
+
+
+
+b2$iabp_n <- with(b2, ifelse((i10_pr1 %in% a | i10_pr2 %in% a | i10_pr3 %in% a | i10_pr4 %in% a  | i10_pr5 %in% a | i10_pr6 %in% a | i10_pr7 %in% a | i10_pr8 %in% a |i10_pr9 %in% a| i10_pr10 %in% a | i10_pr11 %in% a | i10_pr12 %in% a | i10_pr13 %in% a | i10_pr14 %in% a | i10_pr15 %in% a ), "yes","no"))
+
+b2 %>% count(iabp_n)
+
+pvad <- as.character(c("5A0221D","5A02216","5A02116","5A0211D","02HA0RJ","02HA3RJ","02HA3RZ"))
+
+
+a <- pvad
+
+b2$pvad_n <- with(b2, ifelse((i10_pr1 %in% a | i10_pr2 %in% a | i10_pr3 %in% a | i10_pr4 %in% a  | i10_pr5 %in% a | i10_pr6 %in% a | i10_pr7 %in% a | i10_pr8 %in% a |i10_pr9 %in% a| i10_pr10 %in% a | i10_pr11 %in% a | i10_pr12 %in% a | i10_pr13 %in% a | i10_pr14 %in% a | i10_pr15 %in% a ), "yes","no"))
+
+b2 %>% count(pvad_n)
+
+```
+
+
+
+
+```{r hospital region}
+
+df <- df %>% mutate(region = fct_recode(factor(hosp_region),
+                                        "North-East" = "1",
+                                        "Mid-West" = "2",
+                                        "South" = "3",
+                                        "West" = "4"))
+
+df %>% count(region)
+
+
+b2 <- b2 %>% mutate(region = fct_recode(factor(hosp_region),
+                                        "North-East" = "1",
+                                        "Mid-West" = "2",
+                                        "South" = "3",
+                                        "West" = "4"))
+
+b2 %>% count(region)
+```
+
+
+```{r keep only 2007 & 2016}
+
+df07 <- df %>% filter(year.x == "2007" | year.x == "2015")
+
+b16 <- b2 %>% filter(year.x == "2016")
+
+```
+
+
+Keep only variables of interest:
+
+```{r}
+
+
+df07$nis_stratum <- df07$nis_stratum.x
+df07$year <- df07$year.x
+df07$discwt <- df07$discwt.x
+
+
+c1 <- df07 %>% select(age, female, key, los, nis_stratum, discwt, priormi, priorpci, chf, stemi, hospid, cm_dm, cm_dmcx, cm_obese, cm_renlfail, pay_n, disp_n,race_n, young, old,  pvad_n, iabp_n, cpb, cs, iddm_n, year)
+
+
+c2 <- b16 %>% select(age, female, key_nis, los, nis_stratum.x, discwt.x, priormi, priorpci, cm_chf, stemi, hosp_nis.x, cm_dm, cm_dmcx,  pay_n, disp_n,race_n, young, old,  pvad_n, iabp_n, cpb, cs, iddm_n, year.x, cm_obese, cm_renlfail)
+
+
+
+c2$year <- c2$year.x
+c2$nis_stratum <- c2$nis_stratum.x
+c2$key <- c2$key_nis
+c2$hospid <- c2$hosp_nis.x
+c2$chf <- c2$cm_chf
+c2$discwt <- c2$discwt.x
+
+
+
+
+
+c1_1 <- c1 %>%  select(age, female, key, los, nis_stratum, discwt, priormi, priorpci, chf, stemi, hospid, cm_dm, cm_dmcx, cm_obese, cm_renlfail, pay_n, disp_n,race_n, young, old,  pvad_n, iabp_n, cpb, cs, iddm_n, year)
+
+c2_2 <- c2 %>% select(age, female, key, los, nis_stratum, discwt, priormi, priorpci, chf, stemi, hospid, cm_dm, cm_dmcx, cm_obese, cm_renlfail, pay_n, disp_n,race_n, young, old,  pvad_n, iabp_n, cpb, cs, iddm_n, year)
+
+ct <- rbind(c1_1, c2_2)
+
+ct
+
+```
+
+Create table one:
+
+```{r}
+myvars <- c("age", "female",  "los",   "priormi", 
+"priorpci", "chf", "stemi",  "cm_dm", "cm_dmcx", "cm_obese", 
+"cm_renlfail", "pay_n", "disp_n", "race_n", "young", "old", "pvad_n", 
+"iabp_n", "cpb", "cs", "iddm_n", "year")
+
+
+## Vector of categorical variables that need transformation
+
+catVars <- c( "female",   "priormi", 
+"priorpci", "chf", "stemi",  "cm_dm", "cm_dmcx", "cm_obese", 
+"cm_renlfail", "pay_n", "disp_n", "race_n", "young", "old", "pvad_n", 
+"iabp_n", "cpb", "cs", "iddm_n", "year")
+
+options(survey.lonely.psu = "certainty")
+
+t1 <- svydesign(data = df07, strata = ~nis_stratum, id = ~hospid, weights = ~discwt, nest = TRUE)
+
+tab1 <- svyCreateTableOne(vars = myvars , data = t1, factorVars = catVars, includeNA = FALSE, smd = TRUE, strata = c("year"))
+
+
+
+```
+
+
+
+Create surveyobect for each year and then create table:
+
+```{r}
+
+df07_2 <- df07 %>% select(age, female, key, los, nis_stratum, discwt, priormi, priorpci, chf, stemi, hospid, cm_dm, cm_dmcx, cm_obese, cm_renlfail, pay_n, disp_n,race_n, young, old,  pvad_n, iabp_n, cpb, cs, iddm_n, year, teach, region)
+
+
+write_csv(df07_2, "H:/bita_nis/df/df07.csv")
+```
+
+
