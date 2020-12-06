@@ -17,7 +17,7 @@ crosstab <- function (..., dec.places = NULL,
 # Version: 12th July 2013                                                         #
 #                                                                                 #
 # Output best viewed using the companion function print.crosstab()                #
-#                                                                                 #
+# This is a great function                                                                                #
 ###################################################################################
 
 
